@@ -1,21 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 from pydantic import BaseModel
 from typing import Optional
+from joblib import dump, load
 
-class Wine(BaseModel):
-    fixed_acidity: float
-    volatile_acidity: float
-    citric_acid: float
-    residual_sugar: float
-    chlorides: float
-    free_sulfur_dioxide: float
-    total_sulfur_dioxide: float
-    density: float
-    pH: float
-    sulphates: float
-    alcohol: float
-
-    quality: Optional[int]
+from model.wine import Wine
+import model.predictive_model
 
 
 app = FastAPI()
@@ -25,26 +14,56 @@ async def root():
     return {"message": "Hello World!"}
 
 @app.post("/api/predict")
-async def post_predict(wine: Wine):
-    return {"prediction": 10}
+async def predict_quality(wine : Wine = Body(..., embed = True)) :
+
+    model = load("model.joblib")
+
+    dict_wine = wine.__dict__
+    properties = [dict_wine["fixed_acidity"], dict_wine["volatile_acidity"],
+                  dict_wine["citric_acid"], dict_wine["residual_sugar"],
+                  dict_wine["chlorides"], dict_wine["free_sulfur_dioxide"],
+                  dict_wine["total_sulfur_dioxide"], dict_wine["density"],
+                  dict_wine["ph"], dict_wine["sulphates"], dict_wine["alcohol"]]
+
+    quality = predictQuality(model, properties)
+
+    return quality
 
 @app.get("/api/predict", response_model=Wine)
-async def get_predict():
+async def perfect_win():
     wine = Wine()
     return wine
 
 @app.get("/api/model")
-async def get_model():
-    return {"model": {}}
+async def get_model() :
+
+    model = createModel()
+
+    dump(model, "model.joblib")
+
+    return "Done"
 
 @app.get("/api/model/description")
-async def get_model_description():
-    return {"modelDescription": {}}
+async def get_model_description() :
+
+    model = load("model.joblib")
+
+    parameters = parametersModel(model)
+    score = scoreModel(model)
+
+    description = {**parameters, **score}
+
+    return description
 
 @app.put("/api/model")
-async def put_model(wine: Wine):
+async def add_wine(wine: Wine):
     return {"wine": wine}
 
 @app.post("/api/model/retrain")
-async def post_model_retrain():
-    return {"idk": 100}
+async def retrain_model() :
+
+    model = createModel()
+
+    dump(model, "model.joblib")
+
+    return "Done"
