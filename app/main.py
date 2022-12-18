@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Body
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict
 from joblib import dump, load
 
 from model.wine import Wine
@@ -36,6 +36,7 @@ async def perfect_win():
     wine = perfectWine(model)
 
     return wine
+
 @app.get("/api/model")
 async def get_model() -> str:
 
@@ -45,7 +46,7 @@ async def get_model() -> str:
     return "Done"
 
 @app.get("/api/model/description")
-async def get_model_description() :
+async def get_model_description() -> Dict:
 
     model = load("model.joblib")
 
@@ -57,14 +58,17 @@ async def get_model_description() :
     return description
 
 @app.put("/api/model")
-async def add_wine(wine: Wine):
-    return {"wine": wine}
+async def add_wine(wine : Wine = Body(..., embed = True)) -> str:
+
+    properties = wine.__dict__
+    addWine(properties)
+
+    return "Done"
 
 @app.post("/api/model/retrain")
-async def retrain_model() :
+async def retrain_model() -> str:
 
     model = createModel()
-
     dump(model, "model.joblib")
 
     return "Done"
