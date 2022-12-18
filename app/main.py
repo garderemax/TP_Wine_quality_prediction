@@ -14,7 +14,7 @@ async def root():
     return {"message": "Hello World!"}
 
 @app.post("/api/predict")
-async def predict_quality(wine : Wine = Body(..., embed = True)) :
+async def predict_quality(wine: Wine = Body(..., embed = True)) -> int:
 
     model = load("model.joblib")
 
@@ -29,16 +29,17 @@ async def predict_quality(wine : Wine = Body(..., embed = True)) :
 
     return quality
 
-@app.get("/api/predict", response_model=Wine)
+@app.get("/api/predict")
 async def perfect_win():
-    wine = Wine()
-    return wine
 
+    model = load("model.joblib")
+    wine = perfectWine(model)
+
+    return wine
 @app.get("/api/model")
-async def get_model() :
+async def get_model() -> str:
 
     model = createModel()
-
     dump(model, "model.joblib")
 
     return "Done"

@@ -1,6 +1,6 @@
 # Librairies
 import pandas as pd
-from typing import List
+from typing import Dict
 
 
 
@@ -10,21 +10,21 @@ FILE = "Wines.csv"
 
 
 # Fonctions
-def deleteId() :
+def deleteId():
 
     global FILE
     
     data = pd.read_csv(FILE)
 
-    if "Id" in data.columns :
+    if "Id" in data.columns:
 
         data = data.drop("Id", axis = 1)
         data = data.drop_duplicates()
         data.to_csv(FILE, index = False)
 
-# TO DO
-def addWine(properties : List) :
+def addWine(wine: Dict):
 
     global FILE
     
     data = pd.read_csv(FILE)
+    data = data.append(wine, ignore_index = True)
