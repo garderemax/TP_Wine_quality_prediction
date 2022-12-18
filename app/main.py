@@ -4,19 +4,14 @@ from typing import Optional, Dict
 from joblib import dump, load
 
 from model.wine import Wine
-import model.predictive_model
+import model.predictive_model as predictive_model
 
 
 app = FastAPI()
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World!"}
-
 @app.post("/api/predict")
 async def predict_quality(wine: Wine = Body(..., embed = True)) -> int:
-
-    model = load("model.joblib")
+    model = load("model/model.joblib")
 
     dict_wine = wine.__dict__
     properties = [dict_wine["fixed_acidity"], dict_wine["volatile_acidity"],
@@ -25,14 +20,14 @@ async def predict_quality(wine: Wine = Body(..., embed = True)) -> int:
                   dict_wine["total_sulfur_dioxide"], dict_wine["density"],
                   dict_wine["ph"], dict_wine["sulphates"], dict_wine["alcohol"]]
 
-    quality = predictQuality(model, properties)
+    quality = predictive_model.predictQuality(model, properties)
 
     return quality
 
 @app.get("/api/predict")
 async def perfect_win():
 
-    model = load("model.joblib")
+    model = load("model/model.joblib")
     wine = perfectWine(model)
 
     return wine
@@ -41,14 +36,14 @@ async def perfect_win():
 async def get_model() -> str:
 
     model = createModel()
-    dump(model, "model.joblib")
+    dump(model, "model/model.joblib")
 
     return "Done"
 
 @app.get("/api/model/description")
 async def get_model_description() -> Dict:
 
-    model = load("model.joblib")
+    model = load("model/model.joblib")
 
     parameters = parametersModel(model)
     score = scoreModel(model)
@@ -69,6 +64,6 @@ async def add_wine(wine : Wine = Body(..., embed = True)) -> str:
 async def retrain_model() -> str:
 
     model = createModel()
-    dump(model, "model.joblib")
+    dump(model, "model/model.joblib")
 
     return "Done"
